@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace ATM.Controllers {
     [ApiController]
     [Route("api/[controller]")]
-    public class CardController : ControllerBase {
+    public class CardsController : ControllerBase {
         private static readonly List<Card> _cards = new List<Card>
         {
             new Card{
@@ -25,7 +25,7 @@ namespace ATM.Controllers {
             }
         };
 
-        [HttpGet("balance/{cardNumber}")]
+        [HttpGet("{cardNumber}")]
         public ActionResult GetBalance(string cardNumber, [Required] string pass) {
             foreach (var card in _cards) {
                 if (card.Id == cardNumber && card.Password == pass) {
@@ -35,7 +35,7 @@ namespace ATM.Controllers {
             return NotFound();
         }
 
-        [HttpPut("withdraw/{cardNumber}")]
+        [HttpPut("{cardNumber}")]
         public ActionResult PutBalance(string cardNumber, [Required] string pass, [Required] decimal amount) {
             foreach (var card in _cards) {
                 if (card.Id == cardNumber && card.Password == pass) {
