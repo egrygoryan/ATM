@@ -8,7 +8,6 @@ namespace ATM.Controllers;
 [Route("api/[controller]")]
 public class CardsController : ControllerBase 
 {
-    // Prefer to use interfaces instead concrete types
     private static readonly ICollection<Card> Cards = new List<Card>
     {
         new ("4444333322221111", "Troy Mcfarland","edyDfd5A", 800, CardBrands.Visa),
@@ -16,14 +15,13 @@ public class CardsController : ControllerBase
     };
 
     [HttpGet("{cardNumber}/balance")]
-    // Prefer to use IActionResult instead concrete type
-    // Please use Http Attributes [FromRoute] etc. to show other your intention
     public IActionResult GetBalance([FromRoute] string cardNumber)
     {
-        return Cards.FirstOrDefault(x => x.Nubmer == cardNumber)
+        return Cards.FirstOrDefault(x => x.Number == cardNumber)
             is { } card
-            ? Ok(new {card.Nubmer, card.Balance})
-            : BadRequest(new {Message = ""});
+            ? Ok(new {card.Number, card.Balance})
+            : BadRequest(new {Message = ""}); //why don't we use NotFound, BadRequest means
+                                              //something wrong in syntax of our request
     }
 
     [HttpGet("{cardNumber}/init")]
@@ -31,38 +29,28 @@ public class CardsController : ControllerBase
     {
         return Accepted();
     }
-    
+
     [HttpPost]
-    public IActionResult Authorize([FromBody] object request)
-        // Create CardAuthorizeRequest model with
-        // CardNumber
-        // CardPassword
+    public IActionResult Authorize([FromBody] CardAuthorizeRequest request)
     {
-        // card.VerifyPassword(request.CardPassword);
-        return Ok();
+        return Cards.FirstOrDefault(x => x.Number == request.CardNumber)
+            is { } card
+            ? card.CardVerifyPassword(request.CardPassword)
+                ? Ok()
+                : BadRequest(new { Message = "Invalid password" })
+            : NotFound(new { Message = "Invalid card number" });
     }
 
     [HttpPost("withdraw")]
-    public IActionResult Withdraw([FromBody] object request) 
-        // Create CardWithdrawRequest model with
-        // CardNumber
-        // Amount
+    public IActionResult Withdraw([FromBody] CardWithdrawRequest request) 
     {
-        // Prefer to use LINQ everywhere
-        //
-        // BadRequest("cannot withdraw money"); <- this is not valid JSON
-        // You have to return at least -> new {} <- anonymous object
-
-        // foreach (var card in _cards) {
-        //     if (card.Id == cardNumber && card.Password == pass) {
-        //         if (card.Balance < amount) {
-        //             return BadRequest("cannot withdraw money");
-        //         }
-        //         card.Balance -= amount;
-        //         return NoContent();
-        //     }
-        // }
-        // return NotFound();
-        return Ok();
+        return Cards.FirstOrDefault(x => x.Number == request.CardNumber)
+            is { } card
+            ? card.CardWithdrawFunds(request.Amount)
+                // should we return here smth like CreateAtRoute/Action() instead of OK()?
+                // in future iterations for transactions e.g.
+                ? Ok() 
+                : BadRequest(new { Message = "Operation can't be performed" })
+            : NotFound(new { Message = "Invalid card number" });
     }
 }
