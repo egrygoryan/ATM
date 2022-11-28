@@ -1,6 +1,5 @@
-﻿using ATM.Models;
+﻿using ATM.DTO;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace ATM.Controllers;
 
@@ -20,37 +19,40 @@ public class CardsController : ControllerBase
         return Cards.FirstOrDefault(x => x.Number == cardNumber)
             is { } card
             ? Ok(new {card.Number, card.Balance})
-            : BadRequest(new {Message = ""}); //why don't we use NotFound, BadRequest means
-                                              //something wrong in syntax of our request
+            : BadRequest(new {Message = ""});
+        //Even if card is initialized how can we guarantee,
+        //that next uri request will contain valid, prev. initialized card?
+        //e.g. I initialized card, authorized, then try to use getbalance
+        // but misspelled one digit in a card route.
     }
 
     [HttpGet("{cardNumber}/init")]
     public IActionResult Init([FromRoute] string cardNumber)
     {
-        return Accepted();
+        return Cards.FirstOrDefault(x => x.Number == cardNumber)
+            is { } card
+            ? Accepted()
+            : NotFound();
     }
 
     [HttpPost]
     public IActionResult Authorize([FromBody] CardAuthorizeRequest request)
     {
-        return Cards.FirstOrDefault(x => x.Number == request.CardNumber)
-            is { } card
-            ? card.CardVerifyPassword(request.CardPassword)
+        return Cards.FirstOrDefault(x => x.Number == request.CardNumber 
+            && x.VerifyPassword(request.CardPassword))
+                is { } card 
                 ? Ok()
-                : BadRequest(new { Message = "Invalid password" })
-            : NotFound(new { Message = "Invalid card number" });
+                : Unauthorized(new {Message = "Card verification failed" });
     }
 
     [HttpPost("withdraw")]
     public IActionResult Withdraw([FromBody] CardWithdrawRequest request) 
     {
         return Cards.FirstOrDefault(x => x.Number == request.CardNumber)
-            is { } card
-            ? card.CardWithdrawFunds(request.Amount)
-                // should we return here smth like CreateAtRoute/Action() instead of OK()?
-                // in future iterations for transactions e.g.
-                ? Ok() 
-                : BadRequest(new { Message = "Operation can't be performed" })
-            : NotFound(new { Message = "Invalid card number" });
+                is { } card
+                ? card.WithdrawFunds(request.Amount)
+                    ? Ok()
+                    : UnprocessableEntity(new { Message = "Operation can't be performed" })
+                : NotFound(new { Message = "Invalid card number" });
     }
 }

@@ -17,22 +17,19 @@ public sealed class Card
         Brand = brand;
     }
 
-    public bool CardVerifyPassword(string password) //can we use method name withour prefix Card?
-                                                    //we already use card functionality
+    public bool VerifyPassword(string password)
     {
         return Password == password;
     }
 
-    public bool CardWithdrawFunds(decimal amount)
+    public bool WithdrawFunds(decimal amount)
     {
-        switch (Balance >= amount && amount > 0)
-        {
-            case true:
-                Balance -= amount;
-                return true;
-            default:
-                return false;
-        }
+        _ = amount <= 0
+            ? throw new ArgumentOutOfRangeException(nameof(amount), "Amount can't be less or equal zero")
+            : Balance < amount
+                ? throw new ArgumentOutOfRangeException(nameof(Balance), "Balance can't be less than amount")
+                : Balance -= amount;
+        return true;
     }
 }
 
