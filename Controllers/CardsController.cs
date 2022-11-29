@@ -46,13 +46,17 @@ public class CardsController : ControllerBase
     }
 
     [HttpPost("withdraw")]
-    public IActionResult Withdraw([FromBody] CardWithdrawRequest request) 
+    public IActionResult Withdraw([FromBody] CardWithdrawRequest request)
     {
-        return Cards.FirstOrDefault(x => x.Number == request.CardNumber)
-                is { } card
-                ? card.WithdrawFunds(request.Amount)
-                    ? Ok()
-                    : UnprocessableEntity(new { Message = "Operation can't be performed" })
-                : NotFound(new { Message = "Invalid card number" });
+        var card = Cards.FirstOrDefault(x => x.Number == request.CardNumber);
+
+        if (card is null)
+        {
+            return BadRequest(new {Message = "Invalid card number"});
+        }
+        
+        card.WithdrawFunds(request.Amount);
+
+        return Ok(new {Message = "Operation completed successfully"});
     }
 }

@@ -22,14 +22,24 @@ public sealed class Card
         return Password == password;
     }
 
-    public bool WithdrawFunds(decimal amount)
+    public void WithdrawFunds(decimal amount)
     {
-        _ = amount <= 0
-            ? throw new ArgumentOutOfRangeException(nameof(amount), "Amount can't be less or equal zero")
-            : Balance < amount
-                ? throw new ArgumentOutOfRangeException(nameof(Balance), "Balance can't be less than amount")
-                : Balance -= amount;
-        return true;
+        if (amount <= 0)
+        {
+            throw new ArgumentException("You could not withdraw less or equal to zero");
+        }
+
+        if (Balance <= 0)
+        {
+            throw new InvalidOperationException("Your balance is less or equals zero");
+        }
+
+        if (Balance < amount)
+        {
+            throw new InvalidOperationException($"You don't have enough cash to withdraw {amount}");
+        }
+
+        Balance -= amount;
     }
 }
 
