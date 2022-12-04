@@ -1,5 +1,5 @@
 ﻿using ATM.DTO;
-using Microsoft.AspNetCore.Mvc;
+using ATM.Services.Interfaces;
 
 namespace ATM.Controllers;
 
@@ -7,56 +7,44 @@ namespace ATM.Controllers;
 [Route("api/[controller]")]
 public class CardsController : ControllerBase 
 {
-    private static readonly ICollection<Card> Cards = new List<Card>
+    private readonly ICardService _cardService;
+    public CardsController(ICardService cardService)
     {
-        new ("4444333322221111", "Troy Mcfarland","edyDfd5A", 800, CardBrands.Visa),
-        new ("5200000000001005", "Levi Downs", "teEAxnqg", 400, CardBrands.MasterCard)
-    };
+        _cardService = cardService;
+    }
 
     [HttpGet("{cardNumber}/balance")]
     public IActionResult GetBalance([FromRoute] string cardNumber)
     {
-        return Cards.FirstOrDefault(x => x.Number == cardNumber)
-            is { } card
-            ? Ok(new {card.Number, card.Balance})
-            : BadRequest(new {Message = ""});
-        //Even if card is initialized how can we guarantee,
-        //that next uri request will contain valid, prev. initialized card?
-        //e.g. I initialized card, authorized, then try to use getbalance
-        // but misspelled one digit in a card route.
+        //Not exactly sure that checing on card logic should be in controller 
+        if (_cardService.FindCardByNumber(cardNumber) is not Card card)
+        {
+            return BadRequest(new { Message = "Can't get balance of the card" });
+            //or better to send "Invalid card number?"
+            //because current message is more appropriate to server error"
+        }
+
+        return Ok(new {card.Number, card.Balance});
     }
 
     [HttpGet("{cardNumber}/init")]
-    public IActionResult Init([FromRoute] string cardNumber)
-    {
-        return Cards.FirstOrDefault(x => x.Number == cardNumber)
-            is { } card
+    // is it ok to use => expression for multiple rows?
+    // or preferable to use return statement
+
+    public IActionResult Init([FromRoute] string cardNumber) => 
+        _cardService.Initialize(cardNumber)
             ? Accepted()
             : NotFound();
-    }
 
     [HttpPost]
-    public IActionResult Authorize([FromBody] CardAuthorizeRequest request)
-    {
-        return Cards.FirstOrDefault(x => x.Number == request.CardNumber 
-            && x.VerifyPassword(request.CardPassword))
-                is { } card 
-                ? Ok()
-                : Unauthorized(new {Message = "Card verification failed" });
-    }
+    public IActionResult Authorize([FromBody] CardAuthorizeRequest request) =>
+        _cardService.Authorize(request)
+            ? Ok()
+            : Unauthorized(new { Message = "Card verification failed" });
 
     [HttpPost("withdraw")]
-    public IActionResult Withdraw([FromBody] CardWithdrawRequest request)
-    {
-        var card = Cards.FirstOrDefault(x => x.Number == request.CardNumber);
-
-        if (card is null)
-        {
-            return BadRequest(new {Message = "Invalid card number"});
-        }
-        
-        card.WithdrawFunds(request.Amount);
-
-        return Ok(new {Message = "Operation completed successfully"});
-    }
+    public IActionResult Withdraw([FromBody] CardWithdrawRequest request) =>
+        _cardService.Withdraw(request)
+            ? Ok(new { Message = "Operation completed successfully" })
+            : BadRequest(new { Message = "Invalid card number" });
 }
