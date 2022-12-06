@@ -5,7 +5,7 @@ public sealed class Card
     public string Number { get; }
     public string Holder { get; }
     private string Password { get; }
-    public decimal Balance { get; private set; }
+    private decimal Balance { get; set; }
     public CardBrands Brand { get; }
 
     public Card(string number, string holder, string password, decimal balance, CardBrands brand)
@@ -17,10 +17,9 @@ public sealed class Card
         Brand = brand;
     }
 
-    public bool VerifyPassword(string password)
-    {
-        return Password == password;
-    }
+    public bool VerifyPassword(string password) => Password == password;
+
+    public bool VerifyNumber(string number) => Number == number;
 
     public void WithdrawFunds(decimal amount)
     {
@@ -41,5 +40,6 @@ public sealed class Card
 
         Balance -= amount;
     }
-}
 
+    public decimal GetBalance() => Balance;
+}
