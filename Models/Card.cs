@@ -23,11 +23,6 @@ public sealed class Card
 
     public void WithdrawFunds(decimal amount)
     {
-        if (amount <= 0)
-        {
-            throw new ArgumentException("You could not withdraw less or equal to zero");
-        }
-
         if (Balance <= 0)
         {
             throw new InvalidOperationException("Your balance is less or equals zero");

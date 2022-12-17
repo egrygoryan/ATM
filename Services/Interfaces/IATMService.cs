@@ -1,11 +1,9 @@
-﻿using ATM.DTO;
-
-namespace ATM.Services.Interfaces;
+﻿namespace ATM.Services.Interfaces;
 
 public interface IATMService
 {
     bool HasCard(string cardNumber);
-    bool VerifyCard(CardAuthorizeRequest request);
-    CardBalanceResponse? GetCardBalance(string cardNumber);
-    bool Withdraw(CardWithdrawRequest request);
+    bool VerifyCard(string cardNumber, string password);
+    (string, decimal) GetCardBalance(string cardNumber);
+    void Withdraw(string cardNumber, decimal amount);
 }

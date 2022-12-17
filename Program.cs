@@ -1,12 +1,9 @@
-using ATM.Services;
+using ATM.Configuration.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-//added singleton service just for this iteration. 
-//we don't inject any other dependencies in CardService
-builder.Services.AddSingleton<IATMService, ATMService>();
+builder.Services.AddServices();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -20,6 +17,8 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.ConfigureExceptionMiddleware();
 
 app.UseHttpsRedirection();
 
