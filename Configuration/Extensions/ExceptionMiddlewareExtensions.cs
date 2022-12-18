@@ -4,6 +4,6 @@ namespace ATM.Configuration.Extensions;
 
 public static class ExceptionMiddlewareExtensions
 {
-    public static void ConfigureExceptionMiddleware(this IApplicationBuilder builder) =>
+    public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder builder) =>
         builder.UseMiddleware<ExceptionMiddleware>();
 }

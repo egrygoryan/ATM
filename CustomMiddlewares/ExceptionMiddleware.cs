@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using ATM.Configuration.Extensions;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
 namespace ATM.CustomMiddlewares;
@@ -28,8 +28,6 @@ public class ExceptionMiddleware
             _ => Status500InternalServerError,
         };
 
-        context.Response.ContentType = "application/json";
-        var response = JsonSerializer.Serialize(new { exception.Message });
-        await context.Response.WriteAsync(response);
+        await context.Response.WithJsonContent(new { exception.Message });
     }
 }

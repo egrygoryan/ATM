@@ -1,3 +1,3 @@
 ﻿namespace ATM.Models;
 
-public record WithdrawLimits(CardBrands CardBrands, decimal Limit);
+public record WithdrawLimits(CardBrands CardBrand, decimal Limit);

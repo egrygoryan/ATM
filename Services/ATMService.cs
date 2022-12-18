@@ -40,7 +40,7 @@ public class ATMService : IATMService
         }
 
         var card = Cards.First(c => c.VerifyNumber(cardNumber));
-        var limit = Limits.First(l => l.CardBrands == card.Brand).Limit;
+        var limit = Limits.First(l => l.CardBrand == card.Brand).Limit;
 
         if (amount > limit)
         {
