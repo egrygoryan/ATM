@@ -1,27 +1,51 @@
 ﻿namespace ATM.Services;
 
-public class ATMEventBroker : IATMEventBroker
+public sealed class ATMEventBroker : IATMEventBroker
 {
-    private readonly static IDictionary<string, ICollection<ATMEvent>> _cardEvents
-        = new Dictionary<string, ICollection<ATMEvent>>();
-
+    private static readonly Dictionary<string, List<ATMEvent>> _events = new ();
+    private static KeyNotFoundException StreamNotFound => new ("Stream not found");
+    
     public void StartStream(string key, ATMEvent @event)
     {
-        if (_cardEvents.ContainsKey(key))
+        if (_events.ContainsKey(key))
         {
-            RemoveStream(key);
+            _events.Remove(key);
         }
-        _cardEvents.Add(key, new List<ATMEvent>() { @event });
+
+        _events[key] = new () {@event};
     }
 
-    public void AppendEvent(string key, ATMEvent @event) => _cardEvents[key].Add(@event);
+    public void AppendEvent(string key, ATMEvent @event)
+    {
+        if (!_events.TryGetValue(key, out var events))
+        {
+            throw StreamNotFound;
+        }
+        
+        events.Add(@event);
+    }
+    
+    public ATMEvent? FindEvent<T>(string key) where T : ATMEvent
+    {
+        if (_events.TryGetValue(key, out var events))
+        {
+            return events.FirstOrDefault(x => x is T);
+        }
 
+        throw StreamNotFound;
+    }
 
-    public ATMEvent? GetLastEvent(string key)
-        => _cardEvents.ContainsKey(key)
-            ? _cardEvents[key].Last()
-            : null;
-    public void RemoveStream(string key) => _cardEvents.Remove(key);
+    public ATMEvent GetLastEvent(string key)
+    {
+        if (_events.TryGetValue(key, out var events))
+        {
+            return events.Last();
+        }
+        
+        throw StreamNotFound;
+    }
+    
+    //public void RemoveStream(string key) => _cardEvents.Remove(key);
 
     //what for is this method?
     //public ATMEvent? FindEvent<T>(string key) where T : ATMEvent

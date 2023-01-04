@@ -33,18 +33,19 @@ public class ATMService : IATMService
 
     public bool VerifyCard(string cardNumber, string password)
     {
+        var @event = _eventBroker.FindEvent<InitEvent>(cardNumber);
+
+        if (@event is null)
+        {
+            throw new InvalidOperationException("Initialize card to perform authorization");
+        }
+        
         var isVerifiedCard = Cards.Any(c => c.VerifyNumber(cardNumber)
             && c.VerifyPassword(password));
 
         if (isVerifiedCard)
         {
-            switch (_eventBroker.GetLastEvent(cardNumber))
-            {
-                case InitEvent:
-                    _eventBroker.AppendEvent(cardNumber, new AuthorizeEvent());
-                    break;
-                default: throw new InvalidOperationException("Request is not initialized");
-            }
+            _eventBroker.AppendEvent(cardNumber, new AuthorizeEvent());
         }
 
         return isVerifiedCard;
@@ -54,11 +55,8 @@ public class ATMService : IATMService
     {
         if (_eventBroker.GetLastEvent(cardNumber) is not AuthorizeEvent)
         {
-            _eventBroker.RemoveStream(cardNumber);
-            throw new InvalidOperationException("Unauthorized request");
+            throw new InvalidOperationException("Could not perform unauthorized operation");
         }
-
-        _eventBroker.AppendEvent(cardNumber, new WithdrawEvent());
 
         if (amount <= 0)
         {
@@ -85,18 +83,20 @@ public class ATMService : IATMService
 
         TotalAmount -= amount;
         card.WithdrawFunds(amount);
+        
+        _eventBroker.AppendEvent(cardNumber, new WithdrawEvent());
     }
-    public (string, decimal) GetCardBalance(string cardNumber)
+    public (string CardNumber, decimal CardBalance) GetCardBalance(string cardNumber)
     {
         if (_eventBroker.GetLastEvent(cardNumber) is not AuthorizeEvent)
         {
-            _eventBroker.RemoveStream(cardNumber);
-            throw new InvalidOperationException("Unauthorized request");
+            throw new InvalidOperationException("Could not perform unauthorized operation");
         }
-
-        _eventBroker.AppendEvent(cardNumber, new GetBalanceEvent());
+        
         var card = Cards.First(c => c.VerifyNumber(cardNumber));
+        
+        _eventBroker.AppendEvent(cardNumber, new GetBalanceEvent());
 
-        return new(cardNumber, card.GetBalance());
+        return (CardNumber: cardNumber, CardBalance: card.GetBalance());
     }
 }

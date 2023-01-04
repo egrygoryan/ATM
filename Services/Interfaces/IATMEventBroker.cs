@@ -4,7 +4,6 @@ public interface IATMEventBroker
 {
     void StartStream(string key, ATMEvent @event);
     void AppendEvent(string key, ATMEvent @event);
-    //ATMEvent? FindEvent<T>(string key) where T : ATMEvent;
-    ATMEvent? GetLastEvent(string key);
-    void RemoveStream(string key);
+    ATMEvent? FindEvent<T>(string key) where T : ATMEvent;
+    ATMEvent GetLastEvent(string key);
 }

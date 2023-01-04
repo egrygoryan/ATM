@@ -24,8 +24,8 @@ public class ATMController : ControllerBase
     [HttpGet("{cardNumber}/balance")]
     public IActionResult GetBalance([FromRoute] string cardNumber)
     {
-        var balance = _cardService.GetCardBalance(cardNumber);
-        return Ok(new { card = balance.Item1, balance = balance.Item2 });
+        var (_, balance) = _cardService.GetCardBalance(cardNumber);
+        return Ok(new {card = cardNumber, balance});
     }
 
     [HttpPost("withdraw")]
