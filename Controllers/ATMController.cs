@@ -1,8 +1,7 @@
 ﻿using ATM.DTO;
-using ATM.Filters.FiltersAttributes;
 
 namespace ATM.Controllers;
-[Authorize]
+
 [ApiController]
 [Route("api/cards")]
 public class ATMController : ControllerBase

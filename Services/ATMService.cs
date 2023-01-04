@@ -2,7 +2,7 @@
 
 public class ATMService : IATMService
 {
-    private  static readonly ICollection<Card> Cards = new List<Card>
+    private static readonly ICollection<Card> Cards = new List<Card>
     {
         new ("4444333322221111", "Troy Mcfarland","edyDfd5A", 800, CardBrands.Visa),
         new ("5200000000001005", "Levi Downs", "teEAxnqg", 4000, CardBrands.MasterCard)
@@ -16,14 +16,50 @@ public class ATMService : IATMService
 
     private decimal TotalAmount { get; set; } = 10_000;
 
-    public bool HasCard(string cardNumber) => Cards.Any(c => c.VerifyNumber(cardNumber));
+    private readonly IATMEventBroker _eventBroker;
 
-    public bool VerifyCard(string cardNumber, string password) =>
-        Cards.Any(c => c.VerifyNumber(cardNumber) 
+    public ATMService(IATMEventBroker eventBroker) => _eventBroker = eventBroker;
+
+    public bool HasCard(string cardNumber)
+    {
+        var hasCard = Cards.Any(c => c.VerifyNumber(cardNumber));
+        if (hasCard)
+        {
+            _eventBroker.StartStream(cardNumber, new InitEvent());
+        }
+
+        return hasCard;
+    }
+
+    public bool VerifyCard(string cardNumber, string password)
+    {
+        var isVerifiedCard = Cards.Any(c => c.VerifyNumber(cardNumber)
             && c.VerifyPassword(password));
+
+        if (isVerifiedCard)
+        {
+            switch (_eventBroker.GetLastEvent(cardNumber))
+            {
+                case InitEvent:
+                    _eventBroker.AppendEvent(cardNumber, new AuthorizeEvent());
+                    break;
+                default: throw new InvalidOperationException("Request is not initialized");
+            }
+        }
+
+        return isVerifiedCard;
+    }
 
     public void Withdraw(string cardNumber, decimal amount)
     {
+        if (_eventBroker.GetLastEvent(cardNumber) is not AuthorizeEvent)
+        {
+            _eventBroker.RemoveStream(cardNumber);
+            throw new InvalidOperationException("Unauthorized request");
+        }
+
+        _eventBroker.AppendEvent(cardNumber, new WithdrawEvent());
+
         if (amount <= 0)
         {
             throw new ArgumentException("You could not withdraw less or equal to zero");
@@ -52,7 +88,15 @@ public class ATMService : IATMService
     }
     public (string, decimal) GetCardBalance(string cardNumber)
     {
+        if (_eventBroker.GetLastEvent(cardNumber) is not AuthorizeEvent)
+        {
+            _eventBroker.RemoveStream(cardNumber);
+            throw new InvalidOperationException("Unauthorized request");
+        }
+
+        _eventBroker.AppendEvent(cardNumber, new GetBalanceEvent());
         var card = Cards.First(c => c.VerifyNumber(cardNumber));
-        return new (cardNumber, card.GetBalance());
+
+        return new(cardNumber, card.GetBalance());
     }
 }
