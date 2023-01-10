@@ -6,8 +6,8 @@ namespace ATM.Controllers;
 [Route("api/cards")]
 public class ATMController : ControllerBase
 {
-    private readonly IATMService _cardService;
-    public ATMController(IATMService cardService) => _cardService = cardService;
+    private readonly IATMEventService _cardService;
+    public ATMController(IATMEventService cardService) => _cardService = cardService;
 
     [HttpGet("{cardNumber}/init")]
     public IActionResult Init([FromRoute] string cardNumber) =>
@@ -24,7 +24,7 @@ public class ATMController : ControllerBase
     [HttpGet("{cardNumber}/balance")]
     public IActionResult GetBalance([FromRoute] string cardNumber)
     {
-        var (_, balance) = _cardService.GetCardBalance(cardNumber);
+        var balance = _cardService.GetCardBalance(cardNumber);
         return Ok(new {card = cardNumber, balance});
     }
 

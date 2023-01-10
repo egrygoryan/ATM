@@ -25,6 +25,7 @@ public class ExceptionMiddleware
         {
             InvalidOperationException => Status400BadRequest,
             ArgumentException => Status409Conflict,
+            KeyNotFoundException => Status401Unauthorized,
             _ => Status500InternalServerError,
         };
 
