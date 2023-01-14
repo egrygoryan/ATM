@@ -2,9 +2,9 @@
 
 public sealed class ATMService : IATMService
 {
-    private static readonly ICollection<Card> Cards = new List<Card>
+    private static readonly IReadOnlyCollection<Card> Cards = new HashSet<Card>()
     {
-        new ("4444333322221111", "Troy Mcfarland","edyDfd5A", 800, CardBrands.Visa),
+        new ("4444333322221111", "Troy Mcfarland", "edyDfd5A", 800, CardBrands.Visa),
         new ("5200000000001005", "Levi Downs", "teEAxnqg", 4000, CardBrands.MasterCard)
     };
 

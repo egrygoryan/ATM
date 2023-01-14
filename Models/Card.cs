@@ -37,4 +37,7 @@ public sealed class Card
     }
 
     public decimal GetBalance() => Balance;
+    public override bool Equals(object? obj) => Equals(obj as Card);
+    private bool Equals(Card? card) => card is not null && card.Number == Number;
+    public override int GetHashCode() => string.GetHashCode(Number);
 }

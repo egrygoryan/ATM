@@ -44,12 +44,4 @@ public sealed class ATMEventBroker : IATMEventBroker
         
         throw StreamNotFound;
     }
-    
-    //public void RemoveStream(string key) => _cardEvents.Remove(key);
-
-    //what for is this method?
-    //public ATMEvent? FindEvent<T>(string key) where T : ATMEvent
-    //    => _cardEvents.ContainsKey(key)
-    //        ? _cardEvents[key].FirstOrDefault(x => x is T)
-    //        : throw new KeyNotFoundException("Unexpected key value");
 }

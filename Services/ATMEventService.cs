@@ -1,6 +1,6 @@
 ﻿namespace ATM.Services;
 
-public sealed class ATMEventService : IATMEventService
+public sealed class ATMEventService : IATMService
 {
     private readonly IATMService _atmService;
     private readonly IATMEventBroker _eventBroker;
@@ -17,6 +17,7 @@ public sealed class ATMEventService : IATMEventService
         }
         return hasCard;
     }
+
     public bool VerifyCard(string cardNumber, string password)
     {
         var @event = _eventBroker.FindEvent<InitEvent>(cardNumber);
@@ -33,6 +34,7 @@ public sealed class ATMEventService : IATMEventService
         }
         return isVerifiedCard;
     }
+
     public void Withdraw(string cardNumber, decimal amount)
     {
         if (_eventBroker.GetLastEvent(cardNumber) is not AuthorizeEvent)
@@ -44,6 +46,7 @@ public sealed class ATMEventService : IATMEventService
 
         _eventBroker.AppendEvent(cardNumber, new WithdrawEvent());
     }
+
     public decimal GetCardBalance(string cardNumber)
     {
         if (_eventBroker.GetLastEvent(cardNumber) is not AuthorizeEvent)

@@ -6,8 +6,8 @@ namespace ATM.Controllers;
 [Route("api/cards")]
 public class ATMController : ControllerBase
 {
-    private readonly IATMEventService _cardService;
-    public ATMController(IATMEventService cardService) => _cardService = cardService;
+    private readonly IATMService _cardService;
+    public ATMController(IATMService cardService) => _cardService = cardService;
 
     [HttpGet("{cardNumber}/init")]
     public IActionResult Init([FromRoute] string cardNumber) =>
