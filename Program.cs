@@ -23,9 +23,11 @@ if (app.Environment.IsDevelopment()) {
 app.UseExceptionMiddleware();
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();
+
+var minimal = app.Services.GetRequiredService<MinimalATM>();
+minimal.Register(app);
 
 app.Run();

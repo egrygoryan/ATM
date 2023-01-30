@@ -1,6 +1,4 @@
-﻿using ATM.DTO;
-
-namespace ATM.Controllers;
+﻿namespace ATM.Controllers;
 
 [ApiController]
 [Route("api/cards")]
@@ -11,9 +9,9 @@ public class ATMController : ControllerBase
 
     [HttpGet("{cardNumber}/init")]
     public IActionResult Init([FromRoute] string cardNumber) =>
-    _cardService.HasCard(cardNumber)
-        ? Accepted()
-        : NotFound();
+        _cardService.HasCard(cardNumber)
+            ? Accepted()
+            : NotFound();
 
     [HttpPost]
     public IActionResult Authorize([FromBody] CardAuthorizeRequest request) =>
@@ -25,7 +23,7 @@ public class ATMController : ControllerBase
     public IActionResult GetBalance([FromRoute] string cardNumber)
     {
         var balance = _cardService.GetCardBalance(cardNumber);
-        return Ok(new {card = cardNumber, balance});
+        return Ok(new { card = cardNumber, balance });
     }
 
     [HttpPost("withdraw")]
